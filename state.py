@@ -1,9 +1,9 @@
-import numpy as np
-import matplotlib.pyplot as plt
 from collections import namedtuple
 import tensorflow as tf
 
-Coordinates = namedtuple("Coordinates", ["x", "y"])
+
+class State(namedtuple("State", ("current_capacity", "demand", "mask"))):
+    pass
 
 
 class Environment:
