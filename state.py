@@ -37,14 +37,16 @@ class Environment:
         self.current_capacity -= demand_satisfied
 
         in_deopt_flag = tf.cast(tf.equal(next_node, 0), dtype=tf.float32)
-        # self.current_capacity = tf.multiply(self.current_capacity, 1 - in_deopt_flag) + in_deopt_flag * self.max_capacity
+        self.current_capacity = (
+            tf.multiply(self.current_capacity, 1 - in_deopt_flag) + in_deopt_flag * self.max_capacity
+        )
 
         # we don't want to go to places with mask == True
         self.mask = tf.concat([tf.zeros([self.n_samples, 1]), tf.cast(tf.equal(self.demands, 0), tf.float32)[:, 1:]], 1)
 
         self.mask += tf.concat(
             [
-                 # we don't want to stay in depot when there is still demand
+                # we don't want to stay in depot when there is still demand
                 tf.expand_dims(
                     tf.multiply(
                         tf.cast(tf.greater(tf.reduce_sum(self.demands, 1), 0), tf.float32),  # there is still demand
@@ -54,9 +56,9 @@ class Environment:
                 ),
                 # when load == 0
                 tf.tile(
-                    tf.expand_dims(tf.cast(tf.equal(env.current_capacity, 0), tf.float32), -1),
+                    tf.expand_dims(tf.cast(tf.equal(self.current_capacity, 0), tf.float32), -1),
                     [1, self.n_locations - 1],
                 ),
             ],
-            1
+            1,
         )
