@@ -21,7 +21,7 @@ class Environment:
 
         self.mask = tf.zeros(shape=(n_samples, n_locations, 1))  # shape: [n_samples x n_locations]
         self.max_capacity = max_capacity
-        self.current_capacity = tf.cast(tf.fill(dims=n_samples, value=max_capacity), tf.float32)  # shape: [n_samples]
+        self.capacity = tf.cast(tf.fill(dims=n_samples, value=max_capacity), tf.float32)  # shape: [n_samples]
 
     def update_state(self, next_node) -> State:
         range_idx = tf.expand_dims(tf.range(self.n_samples, dtype=tf.float32), 1)
@@ -29,16 +29,16 @@ class Environment:
             tf.concat([range_idx, tf.expand_dims(tf.cast(next_node, tf.float32), -1)], 1), dtype=tf.int32
         )
 
-        demand_satisfied = tf.minimum(tf.gather_nd(self.demands, next_node_idx), self.current_capacity)
+        demand_satisfied = tf.minimum(tf.gather_nd(self.demands, next_node_idx), self.capacity)
 
         capacity_taken = tf.scatter_nd(next_node_idx, demand_satisfied, shape=tf.shape(self.demands))
 
         self.demands = tf.subtract(self.demands, capacity_taken)
-        self.current_capacity -= demand_satisfied
+        self.capacity -= demand_satisfied
 
         in_deopt_flag = tf.cast(tf.equal(next_node, 0), dtype=tf.float32)
-        self.current_capacity = (
-            tf.multiply(self.current_capacity, 1 - in_deopt_flag) + in_deopt_flag * self.max_capacity
+        self.capacity = (
+            tf.multiply(self.capacity, 1 - in_deopt_flag) + in_deopt_flag * self.max_capacity
         )
 
         # we don't want to go to places with mask == True
@@ -56,11 +56,11 @@ class Environment:
                 ),
                 # when load == 0
                 tf.tile(
-                    tf.expand_dims(tf.cast(tf.equal(self.current_capacity, 0), tf.float32), -1),
+                    tf.expand_dims(tf.cast(tf.equal(self.capacity, 0), tf.float32), -1),
                     [1, self.n_locations - 1],
                 ),
             ],
             1,
         )
 
-        return State(current_capacity=self.current_capacity, demands=self.demands, mask=self.mask)
+        return State(capacity=self.capacity, demands=self.demands, mask=self.mask)
