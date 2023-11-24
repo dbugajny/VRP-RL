@@ -2,7 +2,7 @@ from collections import namedtuple
 import tensorflow as tf
 
 
-class State(namedtuple("State", ("current_capacity", "demand", "mask"))):
+class State(namedtuple("State", ("current_capacity", "demands", "mask"))):
     pass
 
 
@@ -11,19 +11,23 @@ class Environment:
         self.n_locations = n_locations
         self.n_samples = n_samples
 
-        self.locations = tf.random.uniform(shape=(n_samples, n_locations, 2), minval=-1, maxval=1)
+        self.locations = tf.random.uniform(
+            shape=(n_samples, n_locations, 2), minval=-1, maxval=1
+        )  # shape: [n_samples x n_locations x 2]
 
         self.demands = tf.cast(
             tf.random.uniform(shape=(n_samples, n_locations - 1), minval=1, maxval=max_demand, dtype=tf.int32),
             tf.float32,
         )
-        self.demands = tf.concat([tf.zeros(shape=(n_samples, 1)), self.demands], axis=1)
+        self.demands = tf.concat(
+            [tf.zeros(shape=(n_samples, 1)), self.demands], axis=1
+        )  # shape: [n_samples x n_locations]
 
-        self.mask = tf.zeros(shape=(n_samples, n_locations, 1))
+        self.mask = tf.zeros(shape=(n_samples, n_locations, 1))  # shape: [n_samples x n_locations]
         self.max_capacity = max_capacity
-        self.current_capacity = tf.cast(tf.fill(dims=n_samples, value=max_capacity), tf.float32)
+        self.current_capacity = tf.cast(tf.fill(dims=n_samples, value=max_capacity), tf.float32)  # shape: [n_samples]
 
-    def update_state(self, next_node) -> None:
+    def update_state(self, next_node) -> State:
         range_idx = tf.expand_dims(tf.range(self.n_samples, dtype=tf.float32), 1)
         next_node_idx = tf.cast(
             tf.concat([range_idx, tf.expand_dims(tf.cast(next_node, tf.float32), -1)], 1), dtype=tf.int32
@@ -62,3 +66,5 @@ class Environment:
             ],
             1,
         )
+
+        return State(current_capacity=self.current_capacity, demands=self.demands, mask=self.mask)
