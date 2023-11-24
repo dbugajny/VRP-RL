@@ -1,9 +1,5 @@
-from collections import namedtuple
+from utils import State
 import tensorflow as tf
-
-
-class State(namedtuple("State", ("current_capacity", "demands", "mask"))):
-    pass
 
 
 class Environment:
