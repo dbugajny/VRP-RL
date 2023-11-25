@@ -10,20 +10,23 @@ class Environment:
             shape=(n_samples, n_locations, 2), minval=-1, maxval=1
         )  # shape: [n_samples x n_locations x 2]
 
-        self.demands = tf.cast(
-            tf.random.uniform(shape=(n_samples, n_locations - 1), minval=1, maxval=max_demand, dtype=tf.int32),
-            tf.float32,
-        )
         self.demands = tf.concat(
-            [tf.zeros(shape=(n_samples, 1)), self.demands], axis=1
+            [
+                tf.zeros(shape=(n_samples, 1)),  # depot
+                tf.cast(
+                    tf.random.uniform(shape=(n_samples, n_locations - 1), minval=1, maxval=max_demand, dtype=tf.int32),
+                    tf.float32,
+                ),  # customers
+            ],
+            axis=1,
         )  # shape: [n_samples x n_locations]
 
         self.mask = tf.concat(
-            [tf.ones(shape=(n_samples, 1)), tf.zeros(shape=(n_samples, n_locations - 1))], 1
+            [tf.ones(shape=(n_samples, 1)), tf.zeros(shape=(n_samples, n_locations - 1))], 1  # depot  # locations
         )  # shape: [n_samples x n_locations]
 
         self.max_capacity = max_capacity
-        self.capacity = tf.cast(tf.fill(dims=n_samples, value=max_capacity), tf.float32)  # shape: [n_samples]
+        self.capacity = tf.cast(tf.fill(dims=n_samples, value=self.max_capacity), tf.float32)  # shape: [n_samples]
 
     def update(self, next_node) -> None:
         range_idx = tf.expand_dims(tf.range(self.n_samples, dtype=tf.float32), 1)
