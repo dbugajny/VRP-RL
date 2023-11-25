@@ -1,6 +1,7 @@
 import tensorflow as tf
 from environment import Environment
 
+
 class Actor(tf.keras.Model):
     def __init__(self, n_locations):
         super().__init__()

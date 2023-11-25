@@ -1,4 +1,3 @@
-from utils import State
 import tensorflow as tf
 
 
@@ -19,11 +18,14 @@ class Environment:
             [tf.zeros(shape=(n_samples, 1)), self.demands], axis=1
         )  # shape: [n_samples x n_locations]
 
-        self.mask = tf.zeros(shape=(n_samples, n_locations, 1))  # shape: [n_samples x n_locations]
+        self.mask = tf.concat(
+            [tf.ones(shape=(n_samples, 1)), tf.zeros(shape=(n_samples, n_locations - 1))], 1
+        )  # shape: [n_samples x n_locations]
+
         self.max_capacity = max_capacity
         self.capacity = tf.cast(tf.fill(dims=n_samples, value=max_capacity), tf.float32)  # shape: [n_samples]
 
-    def update_state(self, next_node) -> State:
+    def update(self, next_node) -> None:
         range_idx = tf.expand_dims(tf.range(self.n_samples, dtype=tf.float32), 1)
         next_node_idx = tf.cast(
             tf.concat([range_idx, tf.expand_dims(tf.cast(next_node, tf.float32), -1)], 1), dtype=tf.int32
@@ -37,9 +39,7 @@ class Environment:
         self.capacity -= demand_satisfied
 
         in_deopt_flag = tf.cast(tf.equal(next_node, 0), dtype=tf.float32)
-        self.capacity = (
-            tf.multiply(self.capacity, 1 - in_deopt_flag) + in_deopt_flag * self.max_capacity
-        )
+        self.capacity = tf.multiply(self.capacity, 1 - in_deopt_flag) + in_deopt_flag * self.max_capacity
 
         # we don't want to go to places with mask == True
         self.mask = tf.concat([tf.zeros([self.n_samples, 1]), tf.cast(tf.equal(self.demands, 0), tf.float32)[:, 1:]], 1)
@@ -62,5 +62,3 @@ class Environment:
             ],
             1,
         )
-
-        return State(capacity=self.capacity, demands=self.demands, mask=self.mask)
