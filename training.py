@@ -25,16 +25,15 @@ def main():
 
             actions.append(action)
 
-        acts = tf.convert_to_tensor(actions)
+        acts = tf.convert_to_tensor(actions)  # shape [n_steps x n_samples x 2]
         acts_2 = tf.concat((tf.expand_dims(actions[-1], 0), actions[:-1]), 0)
-        distances = tf.math.sqrt(tf.reduce_sum(tf.math.square(acts_2 - acts), -1))
-        all_path = tf.reduce_sum(distances, axis=0)
 
-        R = tf.reduce_sum(tf.math.square(acts_2 - acts), -1) # dla tego jako loss działa
+        distances = tf.math.sqrt(tf.reduce_sum(tf.math.square(acts_2 - acts), -1) + 1e-12)
+        summed_path = tf.reduce_sum(distances, axis=0)
 
-        actor_loss = tf.reduce_mean(all_path)
+        loss = tf.reduce_mean(summed_path * 10000000)
 
-    grads = tape.gradient(actor_loss, act.trainable_variables)
+    grads = tape.gradient(loss, act.trainable_variables)
 
 
 if __name__ == "__main__":
