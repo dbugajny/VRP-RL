@@ -12,10 +12,13 @@ class Actor(tf.keras.Model):
 
     def call(self, environment: Environment):
         # query -> vehicle; ref -> locations
-        demands = environment.demands
-        capacity = environment.capacity
 
-        x = self.dense_1(demands)
+        x1 = tf.keras.layers.Flatten()(environment.demands)
+        x2 = tf.keras.layers.Flatten()(environment.capacity)
+        x3 = tf.keras.layers.Flatten()(environment.locations)
+
+        x = tf.keras.layers.Concatenate()([x1, x2, x3])
+        x = self.dense_1(x)
         x = self.dense_2(x)
         x = self.dense_3(x)
         x = self.dense_4(x)
