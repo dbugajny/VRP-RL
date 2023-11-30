@@ -11,7 +11,7 @@ def main():
     max_capacity = 5
 
     actor = Actor(n_locations)
-    optimizer = tf.keras.optimizers.Adam()
+    optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)
 
     env_org = Environment(n_samples, n_locations, max_demand, max_capacity)
 
@@ -19,7 +19,7 @@ def main():
         env = deepcopy(env_org)
         with tf.GradientTape(persistent=True) as tape:
             actions = []
-            for i in range(20):
+            for i in range(200):
                 logits = actor(env, training=True) - env.mask * 1000000
 
                 logits_max = tf.nn.softmax(logits * 100)

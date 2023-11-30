@@ -9,6 +9,7 @@ class Environment:
         self.locations = tf.random.uniform(
             shape=(n_samples, n_locations, 2), minval=-1, maxval=1
         )  # shape: [n_samples x n_locations x 2]
+        self.vehicle = self.locations[:, 0, :]
 
         self.demands = tf.concat(
             [
@@ -33,6 +34,7 @@ class Environment:
         next_node_idx = tf.cast(
             tf.concat([range_idx, tf.expand_dims(tf.cast(next_node, tf.float32), -1)], 1), dtype=tf.int32
         )
+        self.vehicle = tf.gather_nd(self.locations, next_node_idx)
 
         demand_satisfied = tf.minimum(tf.gather_nd(self.demands, next_node_idx), self.capacity)
 
