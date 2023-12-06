@@ -5,9 +5,9 @@ from environment import Environment
 class Actor(tf.keras.Model):
     def __init__(self, n_locations):
         super().__init__()
-        self.dense_1 = tf.keras.layers.Dense(256)
-        self.dense_2 = tf.keras.layers.Dense(256)
-        self.dense_3 = tf.keras.layers.Dense(256)
+        self.dense_1 = tf.keras.layers.Dense(1024)
+        self.dense_2 = tf.keras.layers.Dense(1024)
+        self.dense_3 = tf.keras.layers.Dense(1024)
         self.dense_4 = tf.keras.layers.Dense(n_locations)
 
     def call(self, environment: Environment):

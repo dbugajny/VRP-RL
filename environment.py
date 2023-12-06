@@ -9,7 +9,7 @@ class Environment:
         self.locations = tf.random.uniform(
             shape=(n_samples, n_locations, 2), minval=-1, maxval=1
         )  # shape: [n_samples x n_locations x 2]
-        self.vehicle = self.locations[:, 0, :]
+        self.vehicle = self.locations[:, 0, :]   # shape: [n_samples x 2]
 
         self.demands = tf.concat(
             [
@@ -41,12 +41,13 @@ class Environment:
         capacity_taken = tf.scatter_nd(next_node_idx, demand_satisfied, shape=tf.shape(self.demands))
 
         self.demands = tf.subtract(self.demands, capacity_taken)
-        self.capacity -= demand_satisfied
+        self.capacity = tf.subtract(self.capacity, demand_satisfied)
 
-        in_deopt_flag = tf.cast(tf.equal(next_node, 0), dtype=tf.float32)
-        self.capacity = tf.multiply(self.capacity, 1 - in_deopt_flag) + in_deopt_flag * self.max_capacity
+        in_depot_flag = tf.cast(tf.equal(next_node, 0), dtype=tf.float32)
+        self.capacity = tf.multiply(self.capacity, 1 - in_depot_flag) + in_depot_flag * self.max_capacity
 
         # we don't want to go to places with mask == True
+        # we don't want to go to places with demand == 0
         self.mask = tf.concat([tf.zeros([self.n_samples, 1]), tf.cast(tf.equal(self.demands, 0), tf.float32)[:, 1:]], 1)
 
         self.mask += tf.concat(
@@ -59,7 +60,7 @@ class Environment:
                     ),
                     -1,
                 ),
-                # when load == 0
+                # when capacity == 0
                 tf.tile(
                     tf.expand_dims(tf.cast(tf.equal(self.capacity, 0), tf.float32), -1),
                     [1, self.n_locations - 1],
