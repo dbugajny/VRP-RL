@@ -18,11 +18,11 @@ def main():
 
     env_org = Environment(n_samples, n_locations, max_demand, max_capacity)
 
-    for i in range(n_epochs):
+    for _ in range(n_epochs):
         env = deepcopy(env_org)
         with tf.GradientTape(persistent=True) as tape:
             actions = []
-            for i in range(20):
+            for _ in range(20):
                 logits = actor(env, training=True) - env.mask * big_number
 
                 logits_max = tf.nn.softmax(logits * 10)
