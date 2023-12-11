@@ -32,7 +32,7 @@ class Environment:
     def update(self, next_node) -> None:
         range_idx = tf.expand_dims(tf.range(self.n_samples, dtype=tf.float32), 1)
         next_node_idx = tf.cast(
-            tf.concat([range_idx, tf.reshape(tf.cast(next_node, dtype=tf.float32), shape=[1, 1])], 1), dtype=tf.int32
+            tf.concat([range_idx, tf.reshape(tf.cast(next_node, dtype=tf.float32), shape=[-1, 1])], 1), dtype=tf.int32
         )
         self.vehicle = tf.gather_nd(self.locations, next_node_idx)
 
