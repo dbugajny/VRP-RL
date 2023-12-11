@@ -11,6 +11,7 @@ def main():
     n_locations = 10
     max_demand = 10
     max_capacity = 50
+    big_number = 10000000
 
     actor = Actor(n_locations)
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.1)
@@ -22,11 +23,11 @@ def main():
         with tf.GradientTape(persistent=True) as tape:
             actions = []
             for i in range(20):
-                logits = actor(env, training=True) - env.mask * 10000000
+                logits = actor(env, training=True) - env.mask * big_number
 
                 logits_max = tf.nn.softmax(logits * 10)
 
-                next_node = tf.reduce_sum(env.locations * tf.tile(tf.expand_dims(logits_max, -1), [1, 1, 2]), axis=1)
+                next_node = tf.reduce_mean(env.locations * tf.tile(tf.expand_dims(logits_max, -1), [1, 1, 2]), axis=1)
 
                 env.update(tf.argmax(logits, 1))
 
