@@ -7,7 +7,7 @@ class Environment:
         self.n_samples = n_samples
 
         self.locations = tf.random.uniform(
-            shape=(n_samples, n_locations, 2), minval=-1, maxval=1
+            shape=(n_samples, n_locations, 2), minval=-10, maxval=10
         )  # shape: [n_samples x n_locations x 2]
         self.vehicle = self.locations[:, 0, :]   # shape: [n_samples x 2]
 
@@ -32,7 +32,7 @@ class Environment:
     def update(self, next_node) -> None:
         range_idx = tf.expand_dims(tf.range(self.n_samples, dtype=tf.float32), 1)
         next_node_idx = tf.cast(
-            tf.concat([range_idx, tf.expand_dims(tf.cast(next_node, tf.float32), -1)], 1), dtype=tf.int32
+            tf.concat([range_idx, tf.reshape(tf.cast(next_node, dtype=tf.float32), shape=[1, 1])], 1), dtype=tf.int32
         )
         self.vehicle = tf.gather_nd(self.locations, next_node_idx)
 
@@ -41,7 +41,7 @@ class Environment:
         capacity_taken = tf.scatter_nd(next_node_idx, demand_satisfied, shape=tf.shape(self.demands))
 
         self.demands = tf.subtract(self.demands, capacity_taken)
-        self.capacity = tf.subtract(self.capacity, demand_satisfied)
+        self.capacity = tf.subtract(self.capacity, demand_satisfied) # TODO: will it work ok for multiple vehicles?
 
         in_depot_flag = tf.cast(tf.equal(next_node, 0), dtype=tf.float32)
         self.capacity = tf.multiply(self.capacity, 1 - in_depot_flag) + in_depot_flag * self.max_capacity
