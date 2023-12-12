@@ -7,7 +7,7 @@ class Environment:
         self.n_samples = n_samples
 
         self.locations = tf.random.uniform(
-            shape=(n_samples, n_locations, 2), minval=-10, maxval=10
+            shape=(n_samples, n_locations, 2), minval=-1, maxval=1
         )  # shape: [n_samples x n_locations x 2]
         self.vehicle = self.locations[:, 0, :]   # shape: [n_samples x 2]
 
