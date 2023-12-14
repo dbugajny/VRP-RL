@@ -39,9 +39,8 @@ def run_environment_simulation(environment, actor, n_steps):
     return approximated_actions, real_actions
 
 
-def calculate_loss(actions_approximation):
-    actions = tf.convert_to_tensor(actions_approximation)  # shape [n_steps x n_samples x 2]
-    actions_shifted = tf.concat((tf.expand_dims(actions_approximation[-1], 0), actions_approximation[:-1]), 0)
+def calculate_loss(actions):
+    actions_shifted = tf.concat((tf.expand_dims(actions[-1], 0), actions[:-1]), 0)
 
     distances = tf.reduce_sum(tf.math.square(actions_shifted - actions), -1)  # (a^2 + b^2) instead of sqrt(a^2 + b^2)
 
