@@ -26,17 +26,16 @@ def run_environment_simulation(environment, actor, n_steps):
     for _ in range(n_steps):
         logits = actor(environment, training=True) - environment.mask * BIG_NUMBER
 
-        logits_max = tf.nn.softmax(logits * 3)
+        logits_max = tf.nn.softmax(logits * 100)
 
-        approximated_action = tf.reduce_mean(
+        approximated_action = tf.reduce_sum(
             environment.locations * tf.tile(tf.expand_dims(logits_max, -1), [1, 1, 2]), axis=1
         )
         approximated_actions.append(approximated_action)
-
-        environment.update(tf.argmax(logits, 1))
         real_actions.append(environment.vehicle)
+        environment.update(tf.argmax(logits, 1))
 
-    return approximated_actions, real_actions
+    return tf.convert_to_tensor(approximated_actions), tf.convert_to_tensor(real_actions)
 
 
 def calculate_loss(actions):
