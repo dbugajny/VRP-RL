@@ -26,7 +26,7 @@ def run_environment_simulation(environment, actor, n_steps):
     for _ in range(n_steps):
         logits = actor(environment, training=True) - environment.mask * BIG_NUMBER
 
-        logits_max = tf.nn.softmax(logits * 1)
+        logits_max = tf.nn.softmax(logits * 3)
 
         approximated_action = tf.reduce_mean(
             environment.locations * tf.tile(tf.expand_dims(logits_max, -1), [1, 1, 2]), axis=1
