@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from environment import Environment
-from actor_model import Actor
+from actor import Actor
 from copy import deepcopy
 
 
