@@ -20,20 +20,22 @@ def make_simulation_plot(locations, actions_lst):
     plt.show()
 
 
-def run_environment_simulation(environment, actor, n_steps):
+def run_environment_simulation(environment, actor, n_steps, approximation_level):
     approximated_actions = []
     real_actions = []
     for _ in range(n_steps):
         logits = actor(environment, training=True) - environment.mask * BIG_NUMBER
 
-        logits_max = tf.nn.softmax(logits * 100)
+        logits_max = tf.nn.softmax(logits * approximation_level)
 
         approximated_action = tf.reduce_sum(
             environment.locations * tf.tile(tf.expand_dims(logits_max, -1), [1, 1, 2]), axis=1
         )
         approximated_actions.append(approximated_action)
-        real_actions.append(environment.vehicle)
+
         environment.update(tf.argmax(logits, 1))
+
+        real_actions.append(environment.vehicle)
 
     return tf.convert_to_tensor(approximated_actions), tf.convert_to_tensor(real_actions)
 
