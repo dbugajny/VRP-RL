@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
-BIG_NUMBER = 1000000
+BIG_NUMBER = 10 ** 8
+SMALL_NUMBER = 0.1 ** 8
 
 
 def make_simulation_plot(locations, actions_lst):
@@ -43,7 +44,7 @@ def run_environment_simulation(environment, actor, n_steps, approximation_level)
 def calculate_full_distance(actions):
     actions_shifted = tf.concat((tf.expand_dims(actions[-1], 0), actions[:-1]), 0)
 
-    distances = tf.math.sqrt(tf.reduce_sum(tf.math.square(actions_shifted - actions), -1))
+    distances = tf.math.sqrt(tf.reduce_sum(tf.math.square(actions_shifted - actions), -1) + SMALL_NUMBER)
 
     full_distance = tf.reduce_sum(distances, axis=0)
 
