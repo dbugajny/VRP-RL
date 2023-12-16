@@ -40,13 +40,11 @@ def run_environment_simulation(environment, actor, n_steps, approximation_level)
     return tf.convert_to_tensor(approximated_actions), tf.convert_to_tensor(real_actions)
 
 
-def calculate_loss(actions):
+def calculate_full_distance(actions):
     actions_shifted = tf.concat((tf.expand_dims(actions[-1], 0), actions[:-1]), 0)
 
-    distances = tf.reduce_sum(tf.math.square(actions_shifted - actions), -1)  # (a^2 + b^2) instead of sqrt(a^2 + b^2)
+    distances = tf.math.sqrt(tf.reduce_sum(tf.math.square(actions_shifted - actions), -1))
 
-    summed_path = tf.reduce_sum(distances, axis=0)
+    full_distance = tf.reduce_sum(distances, axis=0)
 
-    loss = tf.reduce_mean(summed_path) * 10000
-
-    return loss
+    return full_distance
