@@ -1,46 +1,52 @@
 import numpy as np
 import tensorflow as tf
-from state import State2
-from actor import DummyActor, GreedyActor, GreedyActor2, ActorTF
+from environment import Environment
+from actor import Actor
+from copy import deepcopy
 
 
-def process_simulation():
+def main():
+    n_epochs = 100
+    n_samples = 1
     n_locations = 10
-    temperature = 10
-    state = State2(n_locations, 5, 10)
-    actor = ActorTF(n_locations)
-    optimizer = tf.keras.optimizers.Adam()
+    max_demand = 10
+    max_capacity = 50
+    big_number = 10000000
 
-    with tf.GradientTape(persistent=True) as gradient_tape:
-        # for i in range(1, 100):
-        locations = state.locations.reshape(1, -1, 1)
-        demands = state.demands.reshape(1, -1, 1).astype(float)
-        vehicle_position = state.vehicle_position.reshape(1, -1, 1)
-        current_capacity = np.array(state.current_capacity).reshape(1, -1, 1).astype(float)
-        max_capacity = np.array(state.max_capacity).reshape(1, -1, 1).astype(float)
+    actor = Actor(n_locations)
+    optimizer = tf.keras.optimizers.Adam(learning_rate=0.1)
 
-        logits = actor(locations, demands, vehicle_position, current_capacity, max_capacity)
-        logits = logits / temperature
-        next_location = np.argmax(logits.numpy()[0, 0])
-        next_location = tf.random.categorical(logits, 1).numpy()[0, 0]
+    env_org = Environment(n_samples, n_locations, max_demand, max_capacity)
 
-        state.update_state(next_location)
+    for _ in range(n_epochs):
+        env = deepcopy(env_org)
+        with tf.GradientTape(persistent=True) as tape:
+            actions = []
+            for _ in range(20):
+                logits = actor(env, training=True) - env.mask * big_number
 
-        loss_fn = tf.keras.losses.MeanSquaredError()
-        loss = loss_fn(logits + next_location, tf.ones(logits.shape))
+                logits_max = tf.nn.softmax(logits * 10)
 
-        # state.visualize_state()
+                next_node = tf.reduce_mean(env.locations * tf.tile(tf.expand_dims(logits_max, -1), [1, 1, 2]), axis=1)
 
-        # if state.are_all_demands_satisfied():
-        #     state.update_state(0)
-        #     break
+                env.update(tf.argmax(logits, 1))
 
-    gradients = gradient_tape.gradient(tf.constant(loss), actor.trainable_variables)
-    print(gradients)
-    grads_and_vars = zip(gradients, actor.trainable_variables)
-    optimizer.apply_gradients(grads_and_vars)
+                actions.append(next_node)  # because of softmax, next_node is not accurate
 
-    state.visualize_state()
+            acts = tf.convert_to_tensor(actions)  # shape [n_steps x n_samples x 2]
+            acts_shifted = tf.concat((tf.expand_dims(actions[-1], 0), actions[:-1]), 0)
+
+            distances = tf.math.sqrt(tf.reduce_sum(tf.math.square(acts_shifted - acts), -1) + 1e-12)
+            summed_path = tf.reduce_sum(distances, axis=0)
+
+            loss = tf.reduce_mean(summed_path)
+
+        grads = tape.gradient(loss, actor.trainable_variables)
+        grads_and_vars = zip(grads, actor.trainable_variables)
+        optimizer.apply_gradients(grads_and_vars)
+
+    print("TRAINING FINISHED ")
+
 
 if __name__ == "__main__":
-    process_simulation()
+    main()
