@@ -35,30 +35,34 @@ def create_distance_matrix(locations):
             mat[i, j] = dist
             mat[j, i] = dist
 
-    return mat.tolist()
+    return mat.astype(int).tolist()
 
 
 def get_solution_results(data, manager, routing, solution):
     total_distance = 0
     total_load = 0
+    route_all = []
 
     for vehicle_id in range(data["num_vehicles"]):
         index = routing.Start(vehicle_id)
         route_distance = 0
         route_load = 0
+        route = []
 
         while not routing.IsEnd(index):
             node_index = manager.IndexToNode(index)
             route_load += data["demands"][node_index]
+            route.append(manager.IndexToNode(index))
             previous_index = index
             index = solution.Value(routing.NextVar(index))
             route_distance += routing.GetArcCostForVehicle(previous_index, index, vehicle_id)
-            print(vehicle_id, previous_index, index, route_load, route_distance)
 
+        route.append(manager.IndexToNode(index))
         total_distance += route_distance
         total_load += route_load
+        route_all.append(route)
 
-    return total_distance, total_load
+    return total_distance, total_load, route_all
 
 
 def or_tools_solve(data):

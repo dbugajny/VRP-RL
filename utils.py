@@ -16,8 +16,21 @@ def make_simulation_plot(locations, actions_lst):
 
     plt.plot([actions_lst[-1, 0], actions_lst[0, 0]], [actions_lst[-1, 1], actions_lst[0, 1]])
 
-    plt.xlim([-1.1, 1.1])
-    plt.ylim([-1.1, 1.1])
+    plt.xlim([-1010, 1010])
+    plt.ylim([-1010, 1010])
+    plt.show()
+
+
+def make_simulation_plot_2(locations, r):
+    plt.figure(figsize=(8, 8))
+
+    plt.scatter(locations[0, 0], locations[0, 1])
+    plt.scatter(locations[1:, 0], locations[1:, 1])
+
+    for i in range(len(r) - 1):
+        plt.plot([locations[r[i], 0], locations[r[i+1], 0]], [locations[r[i], 1], locations[r[i+1], 1]])
+    plt.xlim([-1010, 1010])
+    plt.ylim([-1010, 1010])
     plt.show()
 
 
