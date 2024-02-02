@@ -8,19 +8,12 @@ def create_data_model(env: Environment, idx: int):
     n_locations = len(env.demands[idx])
 
     data = {
-        # "distance_matrix": create_distance_matrix(env.locations[idx]),
+        "distance_matrix": create_distance_matrix(env.locations[idx]),
         "demands": env.demands[idx].numpy().astype(int).tolist(),
         "vehicle_capacities": [int(env.capacity[idx].numpy())] * n_locations,
         "num_vehicles": n_locations,
         "depot": 0,
     }
-    data["distance_matrix"] = [
-        [0, 548, 776, 696, 582],
-        [548, 0, 684, 308, 194],
-        [776, 684, 0, 992, 878],
-        [696, 308, 992, 0, 114],
-        [582, 194, 878, 114, 0],
-    ]
     return data
 
 
@@ -38,7 +31,7 @@ def create_distance_matrix(locations):
             y1 = locations[i][1]
             y2 = locations[j][1]
 
-            dist = distance(x1, x2, y1, y2) * 10
+            dist = distance(x1, x2, y1, y2)
             mat[i, j] = dist
             mat[j, i] = dist
 
