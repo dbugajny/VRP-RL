@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
-BIG_NUMBER = 10 ** 8
-SMALL_NUMBER = 0.1 ** 8
+BIG_NUMBER = 10**8
+SMALL_NUMBER = 0.1**8
 
 
 def make_simulation_plot(locations, actions_lst):

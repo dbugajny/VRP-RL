@@ -9,8 +9,9 @@ def test_run_environment_simulation():
         [
             [[1, 1], [2, 2], [3, 3]],
             [[-1, -1], [-2, -2], [-3, -3]],
-        ]
-        , dtype=tf.float32)
+        ],
+        dtype=tf.float32,
+    )
 
     env.demands = tf.convert_to_tensor([[0, 3, 2], [0, 1, 1]], dtype=tf.float32)
 
