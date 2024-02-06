@@ -4,9 +4,16 @@ import numpy as np
 from environment import Environment
 
 
+"""
+Link to OR-Tools documentations: https://developers.google.com/optimization/routing/cvrp
+OR-Tools are used to calculate optimal (or near-optimal) solution
+"""
+
 def create_data_model(env: Environment, idx: int):
     n_locations = len(env.demands[idx])
 
+    # It is assumed that there is one vehicle that can go to the depot as many times as needed.
+    # In the worst case scenario, the vehicle will return to the depot after visiting each node.
     data = {
         "distance_matrix": create_distance_matrix(env.locations[idx]),
         "demands": env.demands[idx].numpy().astype(int).tolist(),
