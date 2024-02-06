@@ -30,6 +30,11 @@ class Environment:
         self.capacity = tf.cast(tf.fill(dims=n_samples, value=self.max_capacity), tf.float32)  # shape: [n_samples]
 
     def update(self, next_node) -> None:
+        """Process one step:
+            1. Calculate how many goods were taken by the vehicle.
+            2. Update demands and capacity.
+            3. Create mask - vechicle won't go to nodes with mask == True
+        """
         range_idx = tf.expand_dims(tf.range(self.n_samples, dtype=tf.float32), 1)
         next_node_idx = tf.cast(
             tf.concat([range_idx, tf.reshape(tf.cast(next_node, dtype=tf.float32), shape=[-1, 1])], 1), dtype=tf.int32
@@ -41,12 +46,11 @@ class Environment:
         capacity_taken = tf.scatter_nd(next_node_idx, demand_satisfied, shape=tf.shape(self.demands))
 
         self.demands = tf.subtract(self.demands, capacity_taken)
-        self.capacity = tf.subtract(self.capacity, demand_satisfied)  # TODO: will it work ok for multiple vehicles?
+        self.capacity = tf.subtract(self.capacity, demand_satisfied)
 
         in_depot_flag = tf.cast(tf.equal(next_node, 0), dtype=tf.float32)
         self.capacity = tf.multiply(self.capacity, 1 - in_depot_flag) + in_depot_flag * self.max_capacity
 
-        # we don't want to go to places with mask == True
         # we don't want to go to places with demand == 0
         self.mask = tf.concat([tf.zeros([self.n_samples, 1]), tf.cast(tf.equal(self.demands, 0), tf.float32)[:, 1:]], 1)
 
